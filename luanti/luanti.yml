@@ -12,7 +12,7 @@ spec:
   storageClassName: "local-path"
   accessModes:
     - ReadWriteOnce
-  ressources:
+  resources:
     requests:
       storage: 2Gi
 ---
