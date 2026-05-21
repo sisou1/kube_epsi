@@ -47,9 +47,9 @@ spec:
               [ -d /config/.minetest/games ] || mkdir -p /config/.minetest/games && echo "games folder already exit"
               [ -d /config/.minetest/games/ctf ] && echo "already installed" || git clone --recursive https://github.com/MT-CTF/captureflag.git /config/.minetest/games/ctf
               [ -d /config/.minetest/worlds/world ] && chown -R 1000:1000 /config/.minetest/worlds/world
-            volumeMounts:
-              - name: luanti-data
-                mounPath: /config/.minetest
+          volumeMounts:
+            - name: luanti-data
+              mounPath: /config/.minetest
       containers:
         - name: luanti
           image: lscr.io/linuxserver/luanti:latest
