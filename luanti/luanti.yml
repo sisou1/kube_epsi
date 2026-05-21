@@ -32,42 +32,42 @@ spec:
     metadata:
       labels:
         game: luanti
-      spec:
-        volumes:
-          - name: luanti-data
-            perstistentVolumeClaim:
-              claimName: luanti-pvc
-        initContainers:
-          - name: luanti-git-clone
-            image: alpine/git:2.52.0
-            command:
-              - sh
-              - -c
-              - |
-                [ -d /config/.minetest/games/ctf ] && echo "already installed" || git clone --recursive https://github.com/MT-CTF-captureflag.git /config/.minetest/games/ctf
-                [ -d /config/.minetest/worlds/world ] && chown -R 1000:1000 /config/.minetest/worlds/world
-              volumeMounts:
-                - name: luanti-data
-                  mounPath: /config/.minetest
-          containers:
-            - name: luanti
-              image: lscr.io/linuxserver/luanti:latest
-              env:
-                - name: TZ
-                  value: "Europe/Paris"
-                - name: PUID
-                  value: "1000"
-                - name: PGID
-                  value: "1000"
-                - name: CLI_ARGS
-                  value: "--gameid ctf"
-              ports:
-                - containerPort: 30000
-                  name: game
-                  protocol: UDP
-              volumeMounts:
-                - name: luanti-data
-                  mountPath: /config/.minetest
+    spec:
+      volumes:
+        - name: luanti-data
+          perstistentVolumeClaim:
+            claimName: luanti-pvc
+      initContainers:
+        - name: luanti-git-clone
+          image: alpine/git:2.52.0
+          command:
+            - sh
+            - -c
+            - |
+              [ -d /config/.minetest/games/ctf ] && echo "already installed" || git clone --recursive https://github.com/MT-CTF/captureflag.git /config/.minetest/games/ctf
+              [ -d /config/.minetest/worlds/world ] && chown -R 1000:1000 /config/.minetest/worlds/world
+            volumeMounts:
+              - name: luanti-data
+                mounPath: /config/.minetest
+      containers:
+        - name: luanti
+          image: lscr.io/linuxserver/luanti:latest
+          env:
+            - name: TZ
+              value: "Europe/Paris"
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: CLI_ARGS
+              value: "--gameid ctf"
+          ports:
+            - containerPort: 30000
+              name: game
+              protocol: UDP
+          volumeMounts:
+            - name: luanti-data
+              mountPath: /config/.minetest
 ---
 apiVersion: v1
 kind: Service
@@ -81,6 +81,5 @@ spec:
   ports:
     - name: luanti-game
       port: 30000
-      targetP
-ort: 30000
+      targetPort: 30000
       protocol: UDP
