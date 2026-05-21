@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: luanti
+---
+apiVersion: v1
+kind: PerstistentVolumeClaim
+metadata:
+  name: luanti-pvc
+  namespace: luanti
+spec:
+  storageClassName: "local-path"
+  accesModes:
+    - ReadWriteOnce
+  ressourcces:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: luanti
+  namespace: luanti
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      game: luanti
+  template:
+    metadata:
+      labels:
+        game: luanti
+      spec:
+        volumes:
+          - name: luanti-data
+            perstistentVolumeClaim:
+              claimName: luanti-pvc
+        initContainers:
+          - name: luanti-git-clone
+            image: alpine/git:2.52.0
+            command:
+              - sh
+              - -c
+              - |
+                [ -d /config/.minetest/games/ctf ] && echo "already installed" || git clone --recursive https://github.com/MT-CTF-captureflag.git /config/.minetest/games/ctf
+                [ -d /config/.minetest/worlds/world ] && chown -R 1000:1000 /config/.minetest/worlds/world
+              volumeMounts:
+                - name: luanti-data
+                  mounPath: /config/.minetest
+          containers:
+            - name: luanti
+              image: lscr.io/linuxserver/luanti:latest
+              env:
+                - name: TZ
+                  value: "Europe/Paris"
+                - name: PUID
+                  value: "1000"
+                - name: PGID
+                  value: "1000"
+                - name: CLI_ARGS
+                  value: "--gameid ctf"
+              ports:
+                - containerPort: 30000
+                  name: game
+                  protocol: UDP
+              volumeMounts:
+                - name: luanti-data
+                  mountPath: /config/.minetest
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: luanti-svc
+  namespace: luanti
+spec:
+  type: LoadBalancer
+  selector:
+    game: luanti
+  ports:
+    - name: luanti-game
+      port: 30000
+      targetP
+ort: 30000
+      protocol: UDP
