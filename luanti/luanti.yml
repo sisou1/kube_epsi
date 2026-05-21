@@ -10,9 +10,9 @@ metadata:
   namespace: luanti
 spec:
   storageClassName: "local-path"
-  accesModes:
+  accessModes:
     - ReadWriteOnce
-  ressourcces:
+  ressources:
     requests:
       storage: 2Gi
 ---
